@@ -1,6 +1,8 @@
-import { motion, useMotionValue, useTransform } from 'framer-motion';
-import { ArrowRight, Play, Cpu, Wifi, Boxes } from 'lucide-react';
-import { image1 } from './ImageList';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Play, Cpu, Wifi, Boxes, X } from 'lucide-react';
+import { image1, video3 } from './ImageList';
 
 const FONT_STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap');
@@ -59,7 +61,76 @@ const CircuitBackdrop = () => (
   </svg>
 );
 
+/* Video modal — plays the "lab in session" clip with sound, Esc / backdrop to close */
+const VideoModal = ({ onClose }) => {
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] bg-[#0B1130]/96 backdrop-blur-sm flex items-center justify-center p-4 sm:p-8 font-body"
+        onClick={onClose}
+      >
+        <style>{FONT_STYLE}</style>
+
+        <button
+          onClick={onClose}
+          aria-label="Close video"
+          className="absolute top-5 right-5 sm:top-8 sm:right-8 h-11 w-11 rounded-full bg-white/10 hover:bg-[#F5730C] flex items-center justify-center text-white transition-colors z-10"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.94, y: 16 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.94, y: 16 }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-4xl"
+        >
+          <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-[#12C7CF]/40 via-transparent to-[#F5730C]/40 -z-10 blur-sm" />
+          <div className="rounded-2xl overflow-hidden bg-black border border-white/10">
+            <video
+              src={video3}
+              controls
+              autoPlay
+              playsInline
+              className="w-full max-h-[75vh] bg-black"
+            />
+          </div>
+          <div className="absolute -top-3 -left-3 h-8 w-8 border-t-2 border-l-2 border-[#F5730C]" />
+          <div className="absolute -bottom-3 -right-3 h-8 w-8 border-b-2 border-r-2 border-[#F5730C]" />
+
+          <div className="mt-4 flex items-center gap-2 text-white/60">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#F5730C]" />
+            <span className="font-mono text-xs uppercase tracking-wide">
+              A lab in session — STEM RoboAI
+            </span>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 const Hero = ({ title, subtitle, showButtons = true, isSmall = false }) => {
+  const navigate = useNavigate();
+  const [videoOpen, setVideoOpen] = useState(false);
+
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
   const rotateX = useTransform(my, [-40, 40], [4, -4]);
@@ -189,6 +260,7 @@ const Hero = ({ title, subtitle, showButtons = true, isSmall = false }) => {
                   className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-14"
                 >
                   <motion.button
+                    onClick={() => navigate('/programs')}
                     whileHover={{ scale: 1.04, boxShadow: '0 14px 34px rgba(245,115,12,0.35)' }}
                     whileTap={{ scale: 0.96 }}
                     className="bg-[#F5730C] text-white px-8 py-4 rounded-full text-base font-semibold transition-colors duration-300 flex items-center justify-center gap-2"
@@ -198,6 +270,7 @@ const Hero = ({ title, subtitle, showButtons = true, isSmall = false }) => {
                   </motion.button>
 
                   <motion.button
+                    onClick={() => setVideoOpen(true)}
                     whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.96 }}
                     className="border border-white/25 text-white hover:bg-white hover:text-[#0B1130] px-8 py-4 rounded-full text-base font-semibold transition-all duration-300 flex items-center justify-center gap-2 backdrop-blur"
@@ -278,14 +351,16 @@ const Hero = ({ title, subtitle, showButtons = true, isSmall = false }) => {
                 </p>
               </motion.div>
 
-              <motion.div
+              <motion.button
+                onClick={() => setVideoOpen(true)}
                 animate={{ y: [-6, 6, -6] }}
                 transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
-                className="absolute top-1/2 -left-10 -translate-y-1/2 bg-white/10 border border-white/15 backdrop-blur rounded-xl px-4 py-3 hidden xl:flex items-center gap-2"
+                whileHover={{ scale: 1.05 }}
+                className="absolute top-1/2 -left-10 -translate-y-1/2 bg-white/10 border border-white/15 backdrop-blur rounded-xl px-4 py-3 hidden xl:flex items-center gap-2 cursor-pointer hover:bg-white/15 transition-colors"
               >
                 <Cpu className="h-4 w-4 text-[#12C7CF]" />
                 <span className="font-mono text-[11px] text-white/70">Live lab feed</span>
-              </motion.div>
+              </motion.button>
             </motion.div>
 
             {/* Mobile / tablet image (no tilt/parallax) */}
@@ -297,7 +372,7 @@ const Hero = ({ title, subtitle, showButtons = true, isSmall = false }) => {
             >
               <div className="rounded-2xl overflow-hidden border border-white/10">
                 <img
-                  src="https://images.pexels.com/photos/8471919/pexels-photo-8471919.jpeg?auto=compress&cs=tinysrgb&w=800"
+                  src={image1}
                   alt="Students building robots in a STEM RoboAI lab"
                   className="w-full h-72 sm:h-80 object-cover"
                 />
@@ -335,6 +410,8 @@ const Hero = ({ title, subtitle, showButtons = true, isSmall = false }) => {
           </div>
         </motion.div>
       </div>
+
+      {videoOpen && <VideoModal onClose={() => setVideoOpen(false)} />}
     </div>
   );
 };

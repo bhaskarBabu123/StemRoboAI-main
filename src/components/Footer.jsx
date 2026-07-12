@@ -12,6 +12,7 @@ import {
   Send,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import logo from '../images/logo.jpg';
 
 const FONT_STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap');
@@ -108,12 +109,9 @@ const Footer = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
             {/* About */}
             <div>
-              <Link to="/" className="flex items-center gap-2.5 mb-5">
-                <span className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/10">
-                  <Cpu className="h-5 w-5 text-[#F5730C]" />
-                </span>
-                <span className="font-display text-lg font-semibold">STEM RoboAI</span>
-              </Link>
+              <Link to="/" className="flex items-center gap-2.5 group p-2">
+                          <img src={logo} alt="STEM RoboAI Logo" className=" rounded-full object-cover" width={60} />
+                         </Link>
               <p className="text-white/50 text-sm leading-relaxed mb-6">
                 Full-year robotics, AI, IoT and drone labs built into K-12
                 classrooms — installed, staffed and kept running long after the
